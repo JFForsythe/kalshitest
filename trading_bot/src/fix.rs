@@ -32,7 +32,7 @@ pub struct OrderRequest {
     pub order_type: OrderType,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OrderAck {
     pub order_id: String,
     pub sent_at: Instant,
@@ -60,12 +60,9 @@ impl MockFixClient {
     }
 
     async fn simulate_round_trip(&self) -> Duration {
-        let jitter_ms: u64 = {
-            let mut rng = rand::thread_rng();
-            rng.gen_range(
-                self.min_latency.as_millis() as u64..=self.max_latency.as_millis() as u64,
-            )
-        };
+        let mut rng = rand::thread_rng();
+        let jitter_ms: u64 = rng
+            .gen_range(self.min_latency.as_millis() as u64..=self.max_latency.as_millis() as u64);
         let delay = Duration::from_millis(jitter_ms);
         tokio::time::sleep(delay).await;
         delay
